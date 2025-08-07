@@ -1,0 +1,34 @@
+extends Control
+
+@onready var ui_multiplayer: Control = $"."
+@onready var ui_access: Control = $"../UIAccess"
+
+@onready var line_edit_address: LineEdit = $CenterContainer/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/LineEdit_Address
+@onready var line_edit_port: LineEdit = $CenterContainer/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/LineEdit_Port
+
+@onready var label_network_type: Label = $"../UIDebug/VBoxContainer/HBoxContainer/Label_NetworkType"
+@onready var client_counts: Label = $"../UIDebug/VBoxContainer/HBoxContainer2/ClientCounts"
+
+
+func _ready() -> void:
+	ui_multiplayer.show()
+	ui_access.hide()
+	#pass
+
+func _process(delta: float) -> void:
+	pass
+
+func _on_btn_host_pressed() -> void:
+	label_network_type.text = "SERVER"
+	GameNetwork.start_server(line_edit_port.text.to_int())
+	ui_multiplayer.hide()
+	ui_access.show()
+	#pass
+	
+func _on_btn_join_pressed() -> void:
+	label_network_type.text = "CLIENT"
+	GameNetwork.join_server(line_edit_address.text,line_edit_port.text.to_int())
+	ui_multiplayer.hide()
+	ui_access.show()
+	#pass
+	
