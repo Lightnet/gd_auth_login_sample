@@ -17,6 +17,7 @@ var local_player_id: int = 0  # Local peer ID
 
 # Signals for game logic
 signal player_connected(peer_id: int, player_info: Dictionary)
+signal player_failed_connected
 signal player_disconnected(peer_id: int)
 signal server_disconnected()
 
@@ -89,10 +90,15 @@ func _on_peer_disconnected(peer_id: int):
 
 func _on_connected_to_server():
 	print("Connected to server, local peer ID: %d" % local_player_id)
+	Global.hide_connection_status()
+	sent_notify_message(local_player_id, "Connected to server, local peer ID: %d" % local_player_id)
 
 func _on_connection_failed():
 	print("Connection to server failed")
 	multiplayer.multiplayer_peer = null
+	Global.hide_connection_status()
+	sent_notify_message(local_player_id, "Connection to server failed")
+	player_failed_connected.emit()
 
 func _on_server_disconnected():
 	print("Disconnected from server")
@@ -248,3 +254,5 @@ func sent_notify_message(pid:int, _message:String)->void:
 			notify_message(_message)
 		else: 
 			notify_message.rpc_id(pid,_message)
+	else:
+		notify_message(_message)

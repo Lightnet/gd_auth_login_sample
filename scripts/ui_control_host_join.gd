@@ -11,9 +11,17 @@ extends Control
 
 
 func _ready() -> void:
+	
+	GameNetwork.player_failed_connected.connect(_on_failed_connected)
+	
 	ui_multiplayer.show()
 	ui_access.hide()
 	#pass
+
+func _on_failed_connected()->void:
+	ui_multiplayer.show()
+	ui_access.hide()
+	pass
 
 func _process(delta: float) -> void:
 	pass
@@ -28,6 +36,7 @@ func _on_btn_host_pressed() -> void:
 func _on_btn_join_pressed() -> void:
 	label_network_type.text = "CLIENT"
 	GameNetwork.join_server(line_edit_address.text,line_edit_port.text.to_int())
+	Global.show_connection_status()
 	ui_multiplayer.hide()
 	ui_access.show()
 	#pass

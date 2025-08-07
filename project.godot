@@ -23,6 +23,7 @@ Global="*res://scripts/global.gd"
 [global_group]
 
 notify=""
+connectionstatus=""
 
 [rendering]
 

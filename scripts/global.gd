@@ -1,11 +1,22 @@
 extends Node
 
-
-# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	pass # Replace with function body.
+	pass
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
+	pass
+
+
+func show_connection_status()-> void:
+	#connectionstatus
+	var connectionstatuses = get_tree().get_nodes_in_group("connectionstatus")
+	if len(connectionstatuses) == 1:
+		connectionstatuses[0].show()
+	pass
+
+func hide_connection_status()-> void:
+	#connectionstatus
+	var connectionstatuses = get_tree().get_nodes_in_group("connectionstatus")
+	if len(connectionstatuses) == 1:
+		connectionstatuses[0].hide()
 	pass

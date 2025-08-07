@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://c0bifwyblssp"]
+[gd_scene load_steps=7 format=3 uid="uid://c0bifwyblssp"]
 
 [ext_resource type="Script" uid="uid://dcnav1hs860te" path="res://scripts/game_controller.gd" id="1_vq0e2"]
 [ext_resource type="Script" uid="uid://cuj5ae1xravsv" path="res://scripts/ui_control_host_join.gd" id="2_vc4nx"]
 [ext_resource type="Script" uid="uid://dnt15k0x6nv0i" path="res://scripts/ui_access.gd" id="3_ts4rt"]
 [ext_resource type="Script" uid="uid://bp0sxucx411vn" path="res://scripts/ui_notify.gd" id="4_h843c"]
 [ext_resource type="PackedScene" uid="uid://c0nd1kvgndbaa" path="res://scenes/ui_notify_message.tscn" id="4_rc0pn"]
+[ext_resource type="Script" uid="uid://bkwlgtrl7brh2" path="res://scripts/ui_connect_status.gd" id="6_e85df"]
 
 [node name="GameController" type="Node"]
 script = ExtResource("1_vq0e2")
@@ -247,7 +248,54 @@ grow_horizontal = 0
 [node name="UINotifyMessage" parent="CanvasLayer/UINotify/VBC_Messages" instance=ExtResource("4_rc0pn")]
 layout_mode = 2
 
+[node name="UIConnectStatus" type="Control" parent="CanvasLayer" groups=["connectionstatus"]]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("6_e85df")
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer/UIConnectStatus"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer/UIConnectStatus"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/UIConnectStatus/CenterContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/UIConnectStatus/CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Connecting..."
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/UIConnectStatus/CenterContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="CanvasLayer/UIConnectStatus/CenterContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Time Out ( 30 secs):"
+
+[node name="Label2" type="Label" parent="CanvasLayer/UIConnectStatus/CenterContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "00"
+
 [connection signal="pressed" from="CanvasLayer/UIMultiplayer/CenterContainer/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2/btn_host" to="CanvasLayer/UIMultiplayer" method="_on_btn_host_pressed"]
 [connection signal="pressed" from="CanvasLayer/UIMultiplayer/CenterContainer/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2/btn_join" to="CanvasLayer/UIMultiplayer" method="_on_btn_join_pressed"]
 [connection signal="pressed" from="CanvasLayer/UIAccess/CenterContainer/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2/btn_register" to="CanvasLayer/UIAccess" method="_on_btn_register_pressed"]
 [connection signal="pressed" from="CanvasLayer/UIAccess/CenterContainer/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2/btn_login" to="CanvasLayer/UIAccess" method="_on_btn_login_pressed"]
+[connection signal="visibility_changed" from="CanvasLayer/UIConnectStatus" to="CanvasLayer/UIConnectStatus" method="_on_visibility_changed"]
