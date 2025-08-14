@@ -80,6 +80,7 @@ func _on_peer_connected(peer_id: int):
 		print("Peer %d connected" % peer_id)
 		# Request player info from the new peer
 		request_player_info.rpc_id(peer_id)
+		Global.notify_message("Peer %d connected" % peer_id)
 
 func _on_peer_disconnected(peer_id: int):
 	if multiplayer.is_server():
@@ -87,17 +88,19 @@ func _on_peer_disconnected(peer_id: int):
 		_remove_player(peer_id)
 		# Notify all clients to remove the player
 		sync_remove_player.rpc(peer_id)
+		Global.notify_message("Peer %d disconnected" % peer_id)
 
 func _on_connected_to_server():
 	print("Connected to server, local peer ID: %d" % local_player_id)
 	Global.hide_connection_status()
-	sent_notify_message(local_player_id, "Connected to server, local peer ID: %d" % local_player_id)
+	Global.sent_notify_message(local_player_id, "Connected to server, local peer ID: %d" % local_player_id)
+	
 
 func _on_connection_failed():
 	print("Connection to server failed")
 	multiplayer.multiplayer_peer = null
 	Global.hide_connection_status()
-	sent_notify_message(local_player_id, "Connection to server failed")
+	Global.sent_notify_message(local_player_id, "Connection to server failed")
 	player_failed_connected.emit()
 
 func _on_server_disconnected():
@@ -105,6 +108,7 @@ func _on_server_disconnected():
 	players.clear()
 	multiplayer.multiplayer_peer = null
 	emit_signal("server_disconnected")
+	Global.notify_message("server_disconnected")
 
 # RPC to request player info from a newly connected peer
 @rpc("authority", "call_remote", "reliable")
@@ -129,6 +133,7 @@ func send_player_info(peer_id: int, info: Dictionary):
 # RPC to sync player info to all peers
 @rpc("authority", "call_local", "reliable")
 func sync_player_info(peer_id: int, info: Dictionary):
+	print("authority > call_local > sync_player_info")
 	_add_player(peer_id, info)
 
 # RPC to sync player removal to all peers
@@ -137,50 +142,51 @@ func sync_remove_player(peer_id: int):
 	_remove_player(peer_id)
 
 # Update player position (called by game logic)
-func update_player_position(peer_id: int, position: Vector2):
-	if multiplayer.is_server():
-		if players.has(peer_id):
-			players[peer_id]["position"] = position
-			sync_player_position.rpc(peer_id, position)
-		else:
-			print("Player %d not found" % peer_id)
+#func update_player_position(peer_id: int, position: Vector2):
+	#if multiplayer.is_server():
+		#if players.has(peer_id):
+			#players[peer_id]["position"] = position
+			#sync_player_position.rpc(peer_id, position)
+		#else:
+			#print("Player %d not found" % peer_id)
 
+# this just refs
 # RPC to sync player position
-@rpc("authority", "call_local", "reliable")
-func sync_player_position(peer_id: int, position: Vector2):
-	if players.has(peer_id):
-		players[peer_id]["position"] = position
+#@rpc("authority", "call_local", "reliable")
+#func sync_player_position(peer_id: int, position: Vector2):
+	#if players.has(peer_id):
+		#players[peer_id]["position"] = position
 
 # Example: Send chat message (called by game logic)
-func send_chat_message(message: String):
-	if not multiplayer.is_server():
-		# Clients send to server
-		submit_chat_message.rpc_id(1, local_player_id, message)
-	else:
-		# Server broadcasts directly
-		broadcast_chat_message.rpc(local_player_id, message)
+#func send_chat_message(message: String):
+	#if not multiplayer.is_server():
+		## Clients send to server
+		#submit_chat_message.rpc_id(1, local_player_id, message)
+	#else:
+		## Server broadcasts directly
+		#broadcast_chat_message.rpc(local_player_id, message)
 
 # RPC for clients to submit chat messages to server
-@rpc("any_peer", "call_remote", "reliable")
-func submit_chat_message(peer_id: int, message: String):
-	if multiplayer.is_server():
-		var sender_id = multiplayer.get_remote_sender_id()
-		if sender_id != peer_id:
-			print("Warning: Sender ID mismatch for peer %d" % sender_id)
-			return
-		if players.has(peer_id):
-			broadcast_chat_message.rpc(peer_id, message)
-		else:
-			print("Player %d not found" % peer_id)
+#@rpc("any_peer", "call_remote", "reliable")
+#func submit_chat_message(peer_id: int, message: String):
+	#if multiplayer.is_server():
+		#var sender_id = multiplayer.get_remote_sender_id()
+		#if sender_id != peer_id:
+			#print("Warning: Sender ID mismatch for peer %d" % sender_id)
+			#return
+		#if players.has(peer_id):
+			#broadcast_chat_message.rpc(peer_id, message)
+		#else:
+			#print("Player %d not found" % peer_id)
 
 # RPC to broadcast chat messages to all peers
-@rpc("authority", "call_local", "reliable")
-func broadcast_chat_message(peer_id: int, message: String):
-	if players.has(peer_id):
-		var username = players[peer_id]["username"]
-		print("%s: %s" % [username, message])
-	else:
-		print("Chat from unknown peer %d: %s" % [peer_id, message])
+#@rpc("authority", "call_local", "reliable")
+#func broadcast_chat_message(peer_id: int, message: String):
+	#if players.has(peer_id):
+		#var username = players[peer_id]["username"]
+		#print("%s: %s" % [username, message])
+	#else:
+		#print("Chat from unknown peer %d: %s" % [peer_id, message])
 
 @rpc("any_peer", "call_remote", "reliable")
 func login_request(username: String, password: String):
@@ -204,15 +210,22 @@ func login_request(username: String, password: String):
 			# Update player data
 			_add_player(peer_id, {"username": username, "position": Vector2.ZERO, "token": token})
 			print("Login successful for peer %d (%s)" % [peer_id, username])
-			sent_notify_message(peer_id,"Login successful for peer %d (%s)" % [peer_id, username])
+			Global.sent_notify_message(peer_id,"Login successful for peer %d (%s)" % [peer_id, username])
+			#emit_signal("login_succeeded", peer_id, token)
 		else:
 			reason = "Invalid username or password"
 			print("Login failed for peer %d: %s" % [peer_id, reason])
-			sent_notify_message(peer_id,reason)
-		
+			Global.sent_notify_message(peer_id,reason)
+			
+		print("peer_id: ", peer_id)
 		# Respond to the client
-		login_response.rpc_id(peer_id, result, token, reason)
-		
+		if peer_id > 1: # 1 server, 0 = self server
+			login_response.rpc_id(peer_id, result, token, reason)
+			pass
+		else:
+			login_response( result, token, reason)
+			pass
+			
 		# If login succeeded, sync player info to all peers
 		if result:
 			sync_player_info.rpc(peer_id, players[peer_id])
@@ -238,21 +251,3 @@ func attempt_login(username: String, password: String):
 		print("Server does not need to login")
 		login_request( username, password)
 	
-@rpc("any_peer", "call_remote", "reliable")
-func notify_message(_message:String)->void:
-	var notifies = get_tree().get_nodes_in_group("notify")
-	if len(notifies) == 1:
-		notifies[0].add_message(_message)
-	pass
-
-# testing if the authority server is for remote not other peers
-func sent_notify_message(pid:int, _message:String)->void:
-	print("sent_notify_message id: ", pid)
-	print("multiplayer.is_server(): ", multiplayer.is_server())
-	if multiplayer.is_server():
-		if pid == 0:
-			notify_message(_message)
-		else: 
-			notify_message.rpc_id(pid,_message)
-	else:
-		notify_message(_message)

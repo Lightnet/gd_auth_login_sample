@@ -5,9 +5,6 @@ const UI_NOTIFY_MESSAGE = preload("res://scenes/ui_notify_message.tscn")
 
 func _ready() -> void:
 	clear_messages()
-	pass
-
-#func _process(delta: float) -> void:
 	#pass
 
 func clear_messages()->void:
